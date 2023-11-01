@@ -15,5 +15,6 @@ void ADC_Cali (void);
 
 unsigned int sample_counter = 100;
 unsigned int flag_cali = 0;
+unsigned int flag_overflow = 0;
 
 #endif /* BMS_BMS_ISR_H_ */
