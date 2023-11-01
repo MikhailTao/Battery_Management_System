@@ -16,36 +16,28 @@ extern void Read_Adc_Data (void);
 
 interrupt void ISR(void)  //中断读取ADC转换的数据
 {
-    AdcaRegs.ADCINTFLGCLR.bit.ADCINT1 = 1; //clear INT1 flag
-
-    //
-    // Check if overflow has occurred
-    //
-    if(1 == AdcaRegs.ADCINTOVF.bit.ADCINT1)
-    {
-        AdcaRegs.ADCINTOVFCLR.bit.ADCINT1 = 1; //clear INT1 overflow flag
-        AdcaRegs.ADCINTFLGCLR.bit.ADCINT1 = 1; //clear INT1 flag
-    }
+    EPwm1Regs.ETCLR.bit.INT = 1;  // Clear Interrupt Flag ETFLG.INT = 0
 
     Read_Adc_Data ();  //读取ADC转化的结果
 
-    PieCtrlRegs.PIEACK.all = PIEACK_GROUP1;  //P0 对应第1组
-
     // Calibration
     ADC_Cali ();
+
+    if(PieCtrlRegs.PIEIFR3.bit.INTx1 == 1)//overflow or not
+    {
+        flag_overflow = 1;
+    }
+
+    PieCtrlRegs.PIEACK.all = PIEACK_GROUP3;
 }
 
 void ADC_Cali (void){
     if (1 == flag_cali)
     {
-        ADC_Convert_Offset_0 = ADC_0;
-        ADC_Convert_Offset_1 = ADC_1;
-        ADC_Convert_Offset_2 = ADC_2;
-        ADC_Convert_Offset_3 = ADC_3;
         flag_cali = 0;
     }
 }
 
 void Duty_Update (void){
-    EPwm1Regs.CMPA.bit.CMPA = 0;
+    //EPwm1Regs.CMPA.bit.CMPA = 0;
 }
