@@ -171,30 +171,30 @@ void InitADC(void)
 void Read_Adc_Data (void)  //读取ADC的转换值
 {
     // ADC a
-    ADC_A0  = (float)AdcaResultRegs.ADCRESULT0  * ADC_Convert_Constant_A0   - ADC_Convert_Offset_A0;    //读取ADC的结果，对应pin A0
-    ADC_A1  = (float)AdcaResultRegs.ADCRESULT1  * ADC_Convert_Constant_A1   - ADC_Convert_Offset_A1;    //读取ADC的结果，对应pin A1
-    ADC_A2  = (float)AdcaResultRegs.ADCRESULT2  * ADC_Convert_Constant_A2   - ADC_Convert_Offset_A2;    //读取ADC的结果，对应pin A2
-    ADC_A3  = (float)AdcaResultRegs.ADCRESULT3  * ADC_Convert_Constant_A3   - ADC_Convert_Offset_A3;    //读取ADC的结果，对应pin A3
-    ADC_A4  = (float)AdcaResultRegs.ADCRESULT4  * ADC_Convert_Constant_A4   - ADC_Convert_Offset_A4;    //读取ADC的结果，对应pin A4
-    ADC_A5  = (float)AdcaResultRegs.ADCRESULT5  * ADC_Convert_Constant_A5   - ADC_Convert_Offset_A5;    //读取ADC的结果，对应pin A5
-    ADC_A14 = (float)AdcaResultRegs.ADCRESULT14 * ADC_Convert_Constant_A14  - ADC_Convert_Offset_A14;   //读取ADC的结果，对应pin A14
-    ADC_A15 = (float)AdcaResultRegs.ADCRESULT15 * ADC_Convert_Constant_A15  - ADC_Convert_Offset_A15;   //读取ADC的结果，对应pin A15
+    ADC_A0  = (float)AdcaResultRegs.ADCRESULT0  * ADC_Convert_Constant_A0   * ADC_Convert_Constant  - ADC_Convert_Offset_A0;    //读取ADC的结果，对应pin A0
+    ADC_A1  = (float)AdcaResultRegs.ADCRESULT1  * ADC_Convert_Constant_A1   * ADC_Convert_Constant  - ADC_Convert_Offset_A1;    //读取ADC的结果，对应pin A1
+    ADC_A2  = (float)AdcaResultRegs.ADCRESULT2  * ADC_Convert_Constant_A2   * ADC_Convert_Constant  - ADC_Convert_Offset_A2;    //读取ADC的结果，对应pin A2
+    ADC_A3  = (float)AdcaResultRegs.ADCRESULT3  * ADC_Convert_Constant_A3   * ADC_Convert_Constant  - ADC_Convert_Offset_A3;    //读取ADC的结果，对应pin A3
+    ADC_A4  = (float)AdcaResultRegs.ADCRESULT4  * ADC_Convert_Constant_A4   * ADC_Convert_Constant  - ADC_Convert_Offset_A4;    //读取ADC的结果，对应pin A4
+    ADC_A5  = (float)AdcaResultRegs.ADCRESULT5  * ADC_Convert_Constant_A5   * ADC_Convert_Constant  - ADC_Convert_Offset_A5;    //读取ADC的结果，对应pin A5
+    ADC_A14 = (float)AdcaResultRegs.ADCRESULT14 * ADC_Convert_Constant_A14  * ADC_Convert_Constant  - ADC_Convert_Offset_A14;   //读取ADC的结果，对应pin A14
+    ADC_A15 = (float)AdcaResultRegs.ADCRESULT15 * ADC_Convert_Constant_A15  * ADC_Convert_Constant  - ADC_Convert_Offset_A15;   //读取ADC的结果，对应pin A15
 
     // ADC b
-    ADC_B0  = (float)AdcbResultRegs.ADCRESULT0  * ADC_Convert_Constant_B0   - ADC_Convert_Offset_B0;    //读取ADC的结果，对应pin B0
-    ADC_B1  = (float)AdcbResultRegs.ADCRESULT1  * ADC_Convert_Constant_B1   - ADC_Convert_Offset_B1;    //读取ADC的结果，对应pin B1
-    ADC_B2  = (float)AdcbResultRegs.ADCRESULT2  * ADC_Convert_Constant_B2   - ADC_Convert_Offset_B2;    //读取ADC的结果，对应pin B2
-    ADC_B3  = (float)AdcbResultRegs.ADCRESULT3  * ADC_Convert_Constant_B3   - ADC_Convert_Offset_B3;    //读取ADC的结果，对应pin B3
+    ADC_B0  = (float)AdcbResultRegs.ADCRESULT0  * ADC_Convert_Constant_B0   * ADC_Convert_Constant  - ADC_Convert_Offset_B0;    //读取ADC的结果，对应pin B0
+    ADC_B1  = (float)AdcbResultRegs.ADCRESULT1  * ADC_Convert_Constant_B1   * ADC_Convert_Constant  - ADC_Convert_Offset_B1;    //读取ADC的结果，对应pin B1
+    ADC_B2  = (float)AdcbResultRegs.ADCRESULT2  * ADC_Convert_Constant_B2   * ADC_Convert_Constant  - ADC_Convert_Offset_B2;    //读取ADC的结果，对应pin B2
+    ADC_B3  = (float)AdcbResultRegs.ADCRESULT3  * ADC_Convert_Constant_B3   * ADC_Convert_Constant  - ADC_Convert_Offset_B3;    //读取ADC的结果，对应pin B3
 
     // ADC c
-    ADC_C2  = (float)AdccResultRegs.ADCRESULT2  * ADC_Convert_Constant_C2   - ADC_Convert_Offset_C2;    //读取ADC的结果，对应pin C2
-    ADC_C3  = (float)AdccResultRegs.ADCRESULT3  * ADC_Convert_Constant_C3   - ADC_Convert_Offset_C3;    //读取ADC的结果，对应pin C3
-    ADC_C4  = (float)AdccResultRegs.ADCRESULT4  * ADC_Convert_Constant_C4   - ADC_Convert_Offset_C4;    //读取ADC的结果，对应pin C4
+    ADC_C2  = (float)AdccResultRegs.ADCRESULT2  * ADC_Convert_Constant_C2   * ADC_Convert_Constant  - ADC_Convert_Offset_C2;    //读取ADC的结果，对应pin C2
+    ADC_C3  = (float)AdccResultRegs.ADCRESULT3  * ADC_Convert_Constant_C3   * ADC_Convert_Constant  - ADC_Convert_Offset_C3;    //读取ADC的结果，对应pin C3
+    ADC_C4  = (float)AdccResultRegs.ADCRESULT4  * ADC_Convert_Constant_C4   * ADC_Convert_Constant  - ADC_Convert_Offset_C4;    //读取ADC的结果，对应pin C4
 
     // ADC d
-    ADC_D0  = (float)AdcdResultRegs.ADCRESULT0  * ADC_Convert_Constant_D0   - ADC_Convert_Offset_D0;    //读取ADC的结果，对应pin D0
-    ADC_D1  = (float)AdcdResultRegs.ADCRESULT1  * ADC_Convert_Constant_D1   - ADC_Convert_Offset_D1;    //读取ADC的结果，对应pin D1
-    ADC_D2  = (float)AdcdResultRegs.ADCRESULT2  * ADC_Convert_Constant_D2   - ADC_Convert_Offset_D2;    //读取ADC的结果，对应pin D2
-    ADC_D3  = (float)AdcdResultRegs.ADCRESULT3  * ADC_Convert_Constant_D3   - ADC_Convert_Offset_D3;    //读取ADC的结果，对应pin D3
-    ADC_D4  = (float)AdcdResultRegs.ADCRESULT4  * ADC_Convert_Constant_D4   - ADC_Convert_Offset_D4;    //读取ADC的结果，对应pin D4
+    ADC_D0  = (float)AdcdResultRegs.ADCRESULT0  * ADC_Convert_Constant_D0   * ADC_Convert_Constant  - ADC_Convert_Offset_D0;    //读取ADC的结果，对应pin D0
+    ADC_D1  = (float)AdcdResultRegs.ADCRESULT1  * ADC_Convert_Constant_D1   * ADC_Convert_Constant  - ADC_Convert_Offset_D1;    //读取ADC的结果，对应pin D1
+    ADC_D2  = (float)AdcdResultRegs.ADCRESULT2  * ADC_Convert_Constant_D2   * ADC_Convert_Constant  - ADC_Convert_Offset_D2;    //读取ADC的结果，对应pin D2
+    ADC_D3  = (float)AdcdResultRegs.ADCRESULT3  * ADC_Convert_Constant_D3   * ADC_Convert_Constant  - ADC_Convert_Offset_D3;    //读取ADC的结果，对应pin D3
+    ADC_D4  = (float)AdcdResultRegs.ADCRESULT4  * ADC_Convert_Constant_D4   * ADC_Convert_Constant  - ADC_Convert_Offset_D4;    //读取ADC的结果，对应pin D4
 }
