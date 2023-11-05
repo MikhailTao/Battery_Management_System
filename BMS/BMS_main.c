@@ -52,8 +52,6 @@ void main(void)
 {
     InitSysCtrl();
     InitGpio();
-    InitADC();                                      //Initialize ADC
-    PWM_Init();                                     //Initialize EPWM
 
     DINT;
 
@@ -67,19 +65,20 @@ void main(void)
     EINT;                                           // Enable Global interrupt INTM
     ERTM;                                           // Enable Global real-time interrupt DBGM
 
+    InitADC();                                      //Initialize ADC
+    PWM_Init();                                     //Initialize EPWM
+
+    // Enable TINT0 in the PIE: Group 10 interrupt 2  对应ADC pin2
+
     EPwm1Regs.ETSEL.bit.INTSEL = 1;                 // when TBCTR = 0，trigger EPWM1_INI
     EPwm1Regs.ETPS.bit.INTPRD = 1;                  // Generate INT on 1st event
     EPwm1Regs.ETCLR.bit.INT = 1;                    // Clear Interrupt Flag ETFLG.INT = 0
     EPwm1Regs.ETSEL.bit.INTEN = 1;                  // Enable INT
 
-    // Enable TINT0 in the PIE: Group 10 interrupt 2  对应ADC pin2
-
-    IER |= M_INT3;                                  //打开第一组中断
-
     EALLOW;
     PieVectTable.EPWM1_INT = &ISR;                  //function for EPWM1 interrupt
     EDIS;
-
+    IER |= M_INT3;                                  //打开第一组中断
     PieCtrlRegs.PIEIER3.bit.INTx1 = 1;              //对应3.1组
 
     BMS_Config ();
