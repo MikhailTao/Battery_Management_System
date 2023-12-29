@@ -4,54 +4,32 @@
  *  Created on: 2023-10-30
  *      Author: Tao Ran
  *              UBC Okanagan School of Engineering
- * Description: This is interrupt service routine for ADC
+ * Description: This is main function
  */
 
-#include "F2837xD_device.h"        // F2837xD Headerfile Include File
-#include "F2837xD_Examples.h"      // F2837xD Examples Include File
 
 
-//////////////////////////////////////////////////////////////////////
-//                      Function Declaration                        //
-//////////////////////////////////////////////////////////////////////
-void BMS_Config (void);
-//  ADC
-extern void SetupADC(void);
-extern void InitADC(void);
-//  ePWM
-extern void PWM_Init(void);
-// ISR
-extern void ISR(void);
+#include "F2837xD_device.h"                         // F2837xD Header file Include File
+#include "F2837xD_Examples.h"                       // F2837xD Examples Include File
+#include "BMS_main.h"
 
 
-//////////////////////////////////////////////////////////////////////
-//                          Type Define                             //
-//////////////////////////////////////////////////////////////////////
-//  System Control
-enum    S_STATE {On, Off};
-//  Battery Control
-enum    B_STATE {None, Charging, Wait, Full};
-//  Slot Info
-typedef struct  SLOT    {   enum    B_STATE BatteryState;
-                            float           Voltage;
-                            float           DutyRatio;
-                            float           VoltageChangeRate;
-} SLOT;
 
-//  Parameters Initialization
-enum    S_STATE     SysState = Off;
-struct  SLOT        Slot_1 = {None, 0,0,0};
-struct  SLOT        Slot_2 = {None, 0,0,0};
-struct  SLOT        Slot_3 = {None, 0,0,0};
-
-
-//////////////////////////////////////////////////////////////////////
-//                              CODE                                //
-//////////////////////////////////////////////////////////////////////
 void main(void)
 {
     InitSysCtrl();
+
+#ifdef _FLASH
+    InitFlash();
+#endif
+
     InitGpio();
+
+    InitADC();                                      // Initialize ADC
+    PWM_Init();                                     // Initialize EPWM
+    SCIA_232_GPOI();
+    ExintInit();
+    LED_GPIO_Setup();
 
     DINT;
 
@@ -65,32 +43,94 @@ void main(void)
     EINT;                                           // Enable Global interrupt INTM
     ERTM;                                           // Enable Global real-time interrupt DBGM
 
-    InitADC();                                      //Initialize ADC
-    PWM_Init();                                     //Initialize EPWM
-
-    // Enable TINT0 in the PIE: Group 10 interrupt 2  对应ADC pin2
-
     EPwm1Regs.ETSEL.bit.INTSEL = 1;                 // when TBCTR = 0，trigger EPWM1_INI
     EPwm1Regs.ETPS.bit.INTPRD = 1;                  // Generate INT on 1st event
     EPwm1Regs.ETCLR.bit.INT = 1;                    // Clear Interrupt Flag ETFLG.INT = 0
     EPwm1Regs.ETSEL.bit.INTEN = 1;                  // Enable INT
 
-    EALLOW;
-    PieVectTable.EPWM1_INT = &ISR;                  //function for EPWM1 interrupt
-    EDIS;
-    IER |= M_INT3;                                  //打开第一组中断
-    PieCtrlRegs.PIEIER3.bit.INTx1 = 1;              //对应3.1组
+    IER |= M_INT1;                                  // Button 1, Button 2
+    IER |= M_INT3;                                  // PWM1
 
-    BMS_Config ();
+    EALLOW;
+    PieVectTable.EPWM1_INT = &ISR;                  // ISR function for EPWM1 interrupt
+    PieVectTable.XINT1_INT = &xint1_isr;            // Button 1 External Interrupt
+    PieVectTable.XINT2_INT = &xint2_isr;            // Button 2 External Interrupt
+    EDIS;
+
+    PieCtrlRegs.PIECTRL.bit.ENPIE = 1;              // Enable the PIE block
+    PieCtrlRegs.PIEIER3.bit.INTx1 = 1;              // Enable PIE Group 3 INT1      PWM1
+    PieCtrlRegs.PIEIER1.bit.INTx4 = 1;              // Enable PIE Group 1 INT4      Button XINT1
+    PieCtrlRegs.PIEIER1.bit.INTx5 = 1;              // Enable PIE Group 1 INT5      Button XINT2
+
+    Slot_Init();
+    COMM_Init();                                    // Initialize SCIA-RS232 communication
+    BMS_Init ();
+
+    SysState = OFF;
+    ChargeMode = Fast;
+
+    Kp = 0;
+    Ki = 0;
+    Kd = 0;
+
+    LED1_OFF;
+    LED2_OFF;
+    LED3_OFF;
+    LED4_OFF;
+    LED5_OFF;
+    LED6_OFF;
 
     while(1)
     {
+        update();
     }
 }
 
-void BMS_Config (void){
-    SysState = Off;
-    Slot_1.BatteryState = None;
-    Slot_2.BatteryState = None;
-    Slot_3.BatteryState = None;
+void BMS_Init (void){
+    int i = 0;
+    for (i = 0; i < Data_Package_Size*6; i++){
+        Data_Center_3[i] = 0;
+        Data_Center_4[i] = 0;
+    }
+
+    Data_Sample_Cycle_Count = 0;
+    flag_data_center_ready = 0;
+    Data_Center_3_Ready = 0;
+    Data_Center_4_Ready = 0;
+    Data_Package_Select = 0;
+    Data_Package_Transmission = 0;
+    Feedback_Package_Index = 0;
+}
+
+void ExintInit(void){
+    EALLOW;
+    GpioCtrlRegs.GPAMUX1.bit.GPIO12 = 0;            // GPIO
+    GpioCtrlRegs.GPADIR.bit.GPIO12 = 0;             // input
+    GpioCtrlRegs.GPAQSEL1.bit.GPIO12 = 1;           // XINT2 Synch to SYSCLKOUT only
+    GpioCtrlRegs.GPAMUX1.bit.GPIO13 = 0;            // GPIO
+    GpioCtrlRegs.GPADIR.bit.GPIO13 = 0;             // input
+    GpioCtrlRegs.GPAQSEL1.bit.GPIO13 = 1;           // XINT1 Synch to SYSCLKOUT only
+
+    EDIS;
+    GPIO_SetupXINT1Gpio(13);                        // GPIO12 is XINT2
+    XintRegs.XINT1CR.bit.POLARITY = 0;              // Falling edge interrupt
+    XintRegs.XINT1CR.bit.ENABLE = 1;                // Enable XINT2
+    GPIO_SetupXINT2Gpio(12);                        // GPIO13 is XINT1
+    XintRegs.XINT2CR.bit.POLARITY = 0;              // Falling edge interrupt
+    XintRegs.XINT2CR.bit.ENABLE = 1;                // Enable XINT1
+}
+
+void LED_GPIO_Setup(void){
+    GPIO_SetupPinMux(0, GPIO_MUX_CPU1, 0);
+    GPIO_SetupPinOptions(0, GPIO_OUTPUT, GPIO_PUSHPULL);
+    GPIO_SetupPinMux(1, GPIO_MUX_CPU1, 0);
+    GPIO_SetupPinOptions(1, GPIO_OUTPUT, GPIO_PUSHPULL);
+    GPIO_SetupPinMux(2, GPIO_MUX_CPU1, 0);
+    GPIO_SetupPinOptions(2, GPIO_OUTPUT, GPIO_PUSHPULL);
+    GPIO_SetupPinMux(3, GPIO_MUX_CPU1, 0);
+    GPIO_SetupPinOptions(3, GPIO_OUTPUT, GPIO_PUSHPULL);
+    GPIO_SetupPinMux(4, GPIO_MUX_CPU1, 0);
+    GPIO_SetupPinOptions(4, GPIO_OUTPUT, GPIO_PUSHPULL);
+    GPIO_SetupPinMux(5, GPIO_MUX_CPU1, 0);
+    GPIO_SetupPinOptions(5, GPIO_OUTPUT, GPIO_PUSHPULL);
 }
