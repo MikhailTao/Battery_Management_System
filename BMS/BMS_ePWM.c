@@ -10,52 +10,39 @@
 #include "F2837xD_device.h"        // F2837xD Headerfile Include File
 #include "F2837xD_Examples.h"      // F2837xD Examples Include File
 #include "BMS_ePWM.h"
+#include "BMS_Ext.h"
 
-void PWM_Init(){
-    EALLOW;
-    CpuSysRegs.PCLKCR0.bit.TBCLKSYNC = 0;   // stop PWM Clock
-    EDIS;
-
-    //  Event Trigger Register  -----------------------------------------
-    EPwm1Regs.ETSEL.all = 0;               // Initialize
-    EPwm1Regs.ETPS.all = 0;
-    EPwm1Regs.ETFLG.all = 0;
-    EPwm1Regs.ETCLR.all = 0;
-    EPwm1Regs.ETFRC.all = 0;
-
-    EALLOW;
-    CpuSysRegs.PCLKCR0.bit.TBCLKSYNC = 0;                       // Disable TBCLK within the ePWM
-    EDIS;
-
+void Init_PWM(){
     EPWM1_Init();
     EPWM2_Init();
     EPWM3_Init();
     EPWM4_Init();
     EPWM5_Init();
     EPWM6_Init();
-    EPWM7_Init();
-    EPWM8_Init();
-    EPWM9_Init();
-    EPWM10_Init();
-    EPWM11_Init();
-    EPWM12_Init();
-
-    EALLOW;
-    CpuSysRegs.PCLKCR0.bit.TBCLKSYNC = 1;                       // Start all the timers synced
-    EDIS;
+//    EPWM7_Init();
+//    EPWM8_Init();
+//    EPWM9_Init();
+//    EPWM10_Init();
+//    EPWM11_Init();
+//    EPWM12_Init();
 }
 
 void EPWM1_Init()
 {
-    InitEPwm1Gpio();//开启 ePWM 对应 GPIO 时钟及初始化配置
+    EALLOW;
+    CpuSysRegs.PCLKCR0.bit.TBCLKSYNC = 0;                       // Disable TBCLK within the ePWM
+    CpuSysRegs.PCLKCR2.bit.EPWM1 = 1;                           // ePWM1
+    EDIS;
+
+    InitEPwm1Gpio();                                            // 开启 ePWM 对应 GPIO 时钟及初始化配置
 
     // 初始化时基模块，即配置 TB 相关寄存器值
     EPwm1Regs.TBCTL.bit.PRDLD = TB_IMMEDIATE;                   // 时基周期立即加载模式
     EPwm1Regs.TBCTL.bit.SYNCOSEL = TB_SYNC_DISABLE;             // Pass through  时钟不同步
 
     // Allow each timer to be sync'ed
-    EPwm1Regs.TBCTL.bit.PHSEN = TB_DISABLE;                     //使用相位同步功能
-    EPwm1Regs.TBPHS.all = 0;                                    //相位寄存器清零
+    EPwm1Regs.TBCTL.bit.PHSEN = TB_DISABLE;                     // 使用相位同步功能
+    EPwm1Regs.TBPHS.all = 0;                                    // 相位寄存器清零
     EPwm1Regs.TBCTR = 0x0000;                                   // 清除计数器的值
     EPwm1Regs.TBPRD = tbprd;                                    // 周期频率
     EPwm1Regs.TBCTL.bit.CTRMODE = TB_COUNT_UP;                  // 为向上计数
@@ -67,7 +54,7 @@ void EPWM1_Init()
     EPwm1Regs.CMPCTL.bit.SHDWAMODE = CC_SHADOW;                 // 影子寄存器
 
     // 设置比较器值
-    EPwm1Regs.CMPA.bit.CMPA = tbprd/2;                                // Set Duty Ratio to 0 at beginning
+    EPwm1Regs.CMPA.bit.CMPA = 0;                                // Set Duty Ratio
 
     // 初始化动作限定模块，即配置 AQ 相关寄存器值
     EPwm1Regs.AQCTLA.bit.ZRO = AQ_SET;
@@ -83,21 +70,30 @@ void EPWM1_Init()
     EPwm1Regs.DBCTL.bit.OUT_MODE = DB_FULL_ENABLE;
     EPwm1Regs.DBCTL.bit.POLSEL = DB_ACTV_HIC;
     EPwm1Regs.DBCTL.bit.IN_MODE = DBA_ALL;
-    EPwm1Regs.DBRED.all = 0;                                    // Dead band Rising edge delay value 0
-    EPwm1Regs.DBFED.all = 0;                                    // Dead band Falling Edge Delay Count
+    EPwm1Regs.DBRED.all = 0;                                    // Dead Band 0
+    EPwm1Regs.DBFED.all = 0;
+
+    EALLOW;
+    CpuSysRegs.PCLKCR0.bit.TBCLKSYNC = 1;                       // Start all the timers synced
+    EDIS;
 }
 
 void EPWM2_Init()
 {
-    InitEPwm2Gpio();                                            //开启 ePWM 对应 GPIO 时钟及初始化配置
+    EALLOW;
+    CpuSysRegs.PCLKCR0.bit.TBCLKSYNC = 0;                       // Disable TBCLK within the ePWM
+    CpuSysRegs.PCLKCR2.bit.EPWM2 = 1;                           // ePWM2
+    EDIS;
+
+    InitEPwm2Gpio();                                            // 开启 ePWM 对应 GPIO 时钟及初始化配置
 
     // 初始化时基模块，即配置 TB 相关寄存器值
     EPwm2Regs.TBCTL.bit.PRDLD = TB_IMMEDIATE;                   // 时基周期立即加载模式
     EPwm2Regs.TBCTL.bit.SYNCOSEL = TB_SYNC_DISABLE;             // Pass through  时钟不同步
 
     // Allow each timer to be sync'ed
-    EPwm2Regs.TBCTL.bit.PHSEN = TB_DISABLE;                     //使用相位同步功能
-    EPwm2Regs.TBPHS.all = 0;                                    //相位寄存器清零
+    EPwm2Regs.TBCTL.bit.PHSEN = TB_DISABLE;                     // 使用相位同步功能
+    EPwm2Regs.TBPHS.all = 0;                                    // 相位寄存器清零
     EPwm2Regs.TBCTR = 0x0000;                                   // 清除计数器的值
     EPwm2Regs.TBPRD = tbprd;                                    // 周期频率
     EPwm2Regs.TBCTL.bit.CTRMODE = TB_COUNT_UP;                  // 为向上计数
@@ -109,7 +105,7 @@ void EPWM2_Init()
     EPwm2Regs.CMPCTL.bit.SHDWAMODE = CC_SHADOW;                 // 影子寄存器
 
     // 设置比较器值
-    EPwm2Regs.CMPA.bit.CMPA = tbprd/2;                          // Set compare A value 比较器值为 0
+    EPwm2Regs.CMPA.bit.CMPA = 0;                          // Set compare A value 比较器值为 0
 
     // 初始化动作限定模块，即配置 AQ 相关寄存器值
     EPwm2Regs.AQCTLA.bit.ZRO = AQ_SET;
@@ -127,10 +123,19 @@ void EPWM2_Init()
     EPwm2Regs.DBCTL.bit.IN_MODE = DBA_ALL;
     EPwm2Regs.DBRED.all = 0;                                    //Dead Band 0
     EPwm2Regs.DBFED.all = 0;
+
+    EALLOW;
+    CpuSysRegs.PCLKCR0.bit.TBCLKSYNC = 1;                       // Start all the timers synced
+    EDIS;
 }
 
 void EPWM3_Init()
 {
+    EALLOW;
+    CpuSysRegs.PCLKCR0.bit.TBCLKSYNC = 0;                       // Disable TBCLK within the ePWM
+    CpuSysRegs.PCLKCR2.bit.EPWM1 = 1;                           // ePWM3
+    EDIS;
+
     InitEPwm3Gpio();//开启 ePWM 对应 GPIO 时钟及初始化配置
 
     // 初始化时基模块，即配置 TB 相关寄存器值
@@ -151,7 +156,7 @@ void EPWM3_Init()
     EPwm3Regs.CMPCTL.bit.SHDWAMODE = CC_SHADOW;                 // 影子寄存器
 
     // 设置比较器值
-    EPwm3Regs.CMPA.bit.CMPA = tbprd/2;                                // Set Duty Ratio to 0 at beginning
+    EPwm3Regs.CMPA.bit.CMPA = 0;                                // Set Duty Ratio to 0 at beginning
 
     // 初始化动作限定模块，即配置 AQ 相关寄存器值
     EPwm3Regs.AQCTLA.bit.ZRO = AQ_SET;
@@ -169,10 +174,19 @@ void EPWM3_Init()
     EPwm3Regs.DBCTL.bit.IN_MODE = DBA_ALL;
     EPwm3Regs.DBRED.all = 0;                                    //Dead Band 0
     EPwm3Regs.DBFED.all = 0;
+
+    EALLOW;
+    CpuSysRegs.PCLKCR0.bit.TBCLKSYNC = 1;                       // Start all the timers synced
+    EDIS;
 }
 
 void EPWM4_Init()
 {
+    EALLOW;
+    CpuSysRegs.PCLKCR0.bit.TBCLKSYNC = 0;                       // Disable TBCLK within the ePWM
+    CpuSysRegs.PCLKCR2.bit.EPWM4 = 1;                           // ePWM4
+    EDIS;
+
     InitEPwm4Gpio();                                            //开启 ePWM 对应 GPIO 时钟及初始化配置
 
     // 初始化时基模块，即配置 TB 相关寄存器值
@@ -193,7 +207,7 @@ void EPWM4_Init()
     EPwm4Regs.CMPCTL.bit.SHDWAMODE = CC_SHADOW;                 // 影子寄存器
 
     // 设置比较器值
-    EPwm4Regs.CMPA.bit.CMPA = tbprd/2;                          // Set compare A value 比较器值为 0
+    EPwm4Regs.CMPA.bit.CMPA = 0;                          // Set compare A value 比较器值为 0
 
     // 初始化动作限定模块，即配置 AQ 相关寄存器值
     EPwm4Regs.AQCTLA.bit.ZRO = AQ_SET;
@@ -211,10 +225,19 @@ void EPWM4_Init()
     EPwm4Regs.DBCTL.bit.IN_MODE = DBA_ALL;
     EPwm4Regs.DBRED.all = 0;                                    //Dead Band 0
     EPwm4Regs.DBFED.all = 0;
+
+    EALLOW;
+    CpuSysRegs.PCLKCR0.bit.TBCLKSYNC = 1;                       // Start all the timers synced
+    EDIS;
 }
 
 void EPWM5_Init()
 {
+    EALLOW;
+    CpuSysRegs.PCLKCR0.bit.TBCLKSYNC = 0;                       // Disable TBCLK within the ePWM
+    CpuSysRegs.PCLKCR2.bit.EPWM5 = 1;                           // ePWM5
+    EDIS;
+
     InitEPwm5Gpio();                                            //开启 ePWM 对应 GPIO 时钟及初始化配置
 
     // 初始化时基模块，即配置 TB 相关寄存器值
@@ -235,7 +258,7 @@ void EPWM5_Init()
     EPwm5Regs.CMPCTL.bit.SHDWAMODE = CC_SHADOW;                 // 影子寄存器
 
     // 设置比较器值
-    EPwm5Regs.CMPA.bit.CMPA = tbprd/2;                          // Set compare A value 比较器值为 0
+    EPwm5Regs.CMPA.bit.CMPA = 0;                          // Set compare A value 比较器值为 0
 
     // 初始化动作限定模块，即配置 AQ 相关寄存器值
     EPwm5Regs.AQCTLA.bit.ZRO = AQ_SET;
@@ -253,10 +276,19 @@ void EPWM5_Init()
     EPwm5Regs.DBCTL.bit.IN_MODE = DBA_ALL;
     EPwm5Regs.DBRED.all = 0;                                    //Dead Band 0
     EPwm5Regs.DBFED.all = 0;
+
+    EALLOW;
+    CpuSysRegs.PCLKCR0.bit.TBCLKSYNC = 1;                       // Start all the timers synced
+    EDIS;
 }
 
 void EPWM6_Init()
 {
+    EALLOW;
+    CpuSysRegs.PCLKCR0.bit.TBCLKSYNC = 0;                       // Disable TBCLK within the ePWM
+    CpuSysRegs.PCLKCR2.bit.EPWM5 = 1;                           // ePWM6
+    EDIS;
+
     InitEPwm6Gpio();                                            //开启 ePWM 对应 GPIO 时钟及初始化配置
 
     // 初始化时基模块，即配置 TB 相关寄存器值
@@ -277,7 +309,7 @@ void EPWM6_Init()
     EPwm6Regs.CMPCTL.bit.SHDWAMODE = CC_SHADOW;                 // 影子寄存器
 
     // 设置比较器值
-    EPwm6Regs.CMPA.bit.CMPA = tbprd/2;                          // Set compare A value 比较器值为 0
+    EPwm6Regs.CMPA.bit.CMPA = 0;                          // Set compare A value 比较器值为 0
 
     // 初始化动作限定模块，即配置 AQ 相关寄存器值
     EPwm6Regs.AQCTLA.bit.ZRO = AQ_SET;
@@ -295,10 +327,19 @@ void EPWM6_Init()
     EPwm6Regs.DBCTL.bit.IN_MODE = DBA_ALL;
     EPwm6Regs.DBRED.all = 0;                                    //Dead Band 0
     EPwm6Regs.DBFED.all = 0;
+
+    EALLOW;
+    CpuSysRegs.PCLKCR0.bit.TBCLKSYNC = 1;                       // Start all the timers synced
+    EDIS;
 }
 
 void EPWM7_Init()
 {
+    EALLOW;
+    CpuSysRegs.PCLKCR0.bit.TBCLKSYNC = 0;                       // Disable TBCLK within the ePWM
+    CpuSysRegs.PCLKCR2.bit.EPWM7 = 1;                           // ePWM7
+    EDIS;
+
     InitEPwm7Gpio();                                            //开启 ePWM 对应 GPIO 时钟及初始化配置
 
     // 初始化时基模块，即配置 TB 相关寄存器值
@@ -319,7 +360,7 @@ void EPWM7_Init()
     EPwm7Regs.CMPCTL.bit.SHDWAMODE = CC_SHADOW;                 // 影子寄存器
 
     // 设置比较器值
-    EPwm7Regs.CMPA.bit.CMPA = tbprd/2;                          // Set compare A value 比较器值为 0
+    EPwm7Regs.CMPA.bit.CMPA = 0;                          // Set compare A value 比较器值为 0
 
     // 初始化动作限定模块，即配置 AQ 相关寄存器值
     EPwm7Regs.AQCTLA.bit.ZRO = AQ_SET;
@@ -337,10 +378,19 @@ void EPWM7_Init()
     EPwm7Regs.DBCTL.bit.IN_MODE = DBA_ALL;
     EPwm7Regs.DBRED.all = 0;                                    //Dead Band 0
     EPwm7Regs.DBFED.all = 0;
+
+    EALLOW;
+    CpuSysRegs.PCLKCR0.bit.TBCLKSYNC = 1;                       // Start all the timers synced
+    EDIS;
 }
 
 void EPWM8_Init()
 {
+    EALLOW;
+    CpuSysRegs.PCLKCR0.bit.TBCLKSYNC = 0;                       // Disable TBCLK within the ePWM
+    CpuSysRegs.PCLKCR2.bit.EPWM8 = 1;                           // ePWM8
+    EDIS;
+
     InitEPwm8Gpio();                                            //开启 ePWM 对应 GPIO 时钟及初始化配置
 
     // 初始化时基模块，即配置 TB 相关寄存器值
@@ -361,7 +411,7 @@ void EPWM8_Init()
     EPwm8Regs.CMPCTL.bit.SHDWAMODE = CC_SHADOW;                 // 影子寄存器
 
     // 设置比较器值
-    EPwm8Regs.CMPA.bit.CMPA = tbprd/2;                          // Set compare A value 比较器值为 0
+    EPwm8Regs.CMPA.bit.CMPA = 0;                          // Set compare A value 比较器值为 0
 
     // 初始化动作限定模块，即配置 AQ 相关寄存器值
     EPwm8Regs.AQCTLA.bit.ZRO = AQ_SET;
@@ -379,10 +429,18 @@ void EPWM8_Init()
     EPwm8Regs.DBCTL.bit.IN_MODE = DBA_ALL;
     EPwm8Regs.DBRED.all = 0;                                    //Dead Band 0
     EPwm8Regs.DBFED.all = 0;
+
+    EALLOW;
+    CpuSysRegs.PCLKCR0.bit.TBCLKSYNC = 1;                       // Start all the timers synced
+    EDIS;
 }
 
 void EPWM9_Init()
 {
+    EALLOW;
+    CpuSysRegs.PCLKCR0.bit.TBCLKSYNC = 0;                       // Disable TBCLK within the ePWM
+    CpuSysRegs.PCLKCR2.bit.EPWM9 = 1;                           // ePWM9
+    EDIS;
 
     InitEPwm9Gpio();                                            //开启 ePWM 对应 GPIO 时钟及初始化配置
 
@@ -404,7 +462,7 @@ void EPWM9_Init()
     EPwm9Regs.CMPCTL.bit.SHDWAMODE = CC_SHADOW;                 // 影子寄存器
 
     // 设置比较器值
-    EPwm9Regs.CMPA.bit.CMPA = tbprd/2;                          // Set compare A value 比较器值为 0
+    EPwm9Regs.CMPA.bit.CMPA = 0;                          // Set compare A value 比较器值为 0
 
     // 初始化动作限定模块，即配置 AQ 相关寄存器值
     EPwm9Regs.AQCTLA.bit.ZRO = AQ_SET;
@@ -422,10 +480,19 @@ void EPWM9_Init()
     EPwm9Regs.DBCTL.bit.IN_MODE = DBA_ALL;
     EPwm9Regs.DBRED.all = 0;                                    //Dead Band 0
     EPwm9Regs.DBFED.all = 0;
+
+    EALLOW;
+    CpuSysRegs.PCLKCR0.bit.TBCLKSYNC = 1;                       // Start all the timers synced
+    EDIS;
 }
 
 void EPWM10_Init()
 {
+    EALLOW;
+    CpuSysRegs.PCLKCR0.bit.TBCLKSYNC = 0;                       // Disable TBCLK within the ePWM
+    CpuSysRegs.PCLKCR2.bit.EPWM10 = 1;                          // ePWM10
+    EDIS;
+
     InitEPwm10Gpio();                                           //开启 ePWM 对应 GPIO 时钟及初始化配置
 
     // 初始化时基模块，即配置 TB 相关寄存器值
@@ -446,7 +513,7 @@ void EPWM10_Init()
     EPwm10Regs.CMPCTL.bit.SHDWAMODE = CC_SHADOW;                // 影子寄存器
 
     // 设置比较器值
-    EPwm10Regs.CMPA.bit.CMPA = tbprd/2;                         // Set compare A value 比较器值为 0
+    EPwm10Regs.CMPA.bit.CMPA = 0;                         // Set compare A value 比较器值为 0
 
     // 初始化动作限定模块，即配置 AQ 相关寄存器值
     EPwm10Regs.AQCTLA.bit.ZRO = AQ_SET;
@@ -464,10 +531,19 @@ void EPWM10_Init()
     EPwm10Regs.DBCTL.bit.IN_MODE = DBA_ALL;
     EPwm10Regs.DBRED.all = 0;                                   //Dead Band 0
     EPwm10Regs.DBFED.all = 0;
+
+    EALLOW;
+    CpuSysRegs.PCLKCR0.bit.TBCLKSYNC = 1;                       // Start all the timers synced
+    EDIS;
 }
 
 void EPWM11_Init()
 {
+    EALLOW;
+    CpuSysRegs.PCLKCR0.bit.TBCLKSYNC = 0;                       // Disable TBCLK within the ePWM
+    CpuSysRegs.PCLKCR2.bit.EPWM11 = 1;                          // ePWM11
+    EDIS;
+
     InitEPwm11Gpio();                                           //开启 ePWM 对应 GPIO 时钟及初始化配置
 
     // 初始化时基模块，即配置 TB 相关寄存器值
@@ -488,7 +564,7 @@ void EPWM11_Init()
     EPwm11Regs.CMPCTL.bit.SHDWAMODE = CC_SHADOW;                // 影子寄存器
 
     // 设置比较器值
-    EPwm11Regs.CMPA.bit.CMPA = tbprd/2;                         // Set compare A value 比较器值为 0
+    EPwm11Regs.CMPA.bit.CMPA = 0;                         // Set compare A value 比较器值为 0
 
     // 初始化动作限定模块，即配置 AQ 相关寄存器值
     EPwm11Regs.AQCTLA.bit.ZRO = AQ_SET;
@@ -506,10 +582,19 @@ void EPWM11_Init()
     EPwm11Regs.DBCTL.bit.IN_MODE = DBA_ALL;
     EPwm11Regs.DBRED.all = 0;                                   //Dead Band 0
     EPwm11Regs.DBFED.all = 0;
+
+    EALLOW;
+    CpuSysRegs.PCLKCR0.bit.TBCLKSYNC = 1;                       // Start all the timers synced
+    EDIS;
 }
 
 void EPWM12_Init()
 {
+    EALLOW;
+    CpuSysRegs.PCLKCR0.bit.TBCLKSYNC = 0;                       // Disable TBCLK within the ePWM
+    CpuSysRegs.PCLKCR2.bit.EPWM12 = 1;                          // ePWM12
+    EDIS;
+
     InitEPwm12Gpio();                                           //开启 ePWM 对应 GPIO 时钟及初始化配置
 
     // 初始化时基模块，即配置 TB 相关寄存器值
@@ -530,7 +615,7 @@ void EPWM12_Init()
     EPwm12Regs.CMPCTL.bit.SHDWAMODE = CC_SHADOW;                // 影子寄存器
 
     // 设置比较器值
-    EPwm12Regs.CMPA.bit.CMPA = tbprd/2;                         // Set compare A value 比较器值为 0
+    EPwm12Regs.CMPA.bit.CMPA = 0;                         // Set compare A value 比较器值为 0
 
     // 初始化动作限定模块，即配置 AQ 相关寄存器值
     EPwm12Regs.AQCTLA.bit.ZRO = AQ_SET;
@@ -548,4 +633,8 @@ void EPWM12_Init()
     EPwm12Regs.DBCTL.bit.IN_MODE = DBA_ALL;
     EPwm12Regs.DBRED.all = 0;                                   //Dead Band 0
     EPwm12Regs.DBFED.all = 0;
+
+    EALLOW;
+    CpuSysRegs.PCLKCR0.bit.TBCLKSYNC = 1;                       // Start all the timers synced
+    EDIS;
 }
