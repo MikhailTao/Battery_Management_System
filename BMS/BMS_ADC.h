@@ -12,7 +12,7 @@
 #define BMS_BMS_ADC_H_
 
 void SetupADC(void);
-void InitADC(void);
+void Init_ADC(void);
 void Read_Adc_Data (void);
 
 Uint16      acqps = 149;                                // 75ns-14

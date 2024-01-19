@@ -10,6 +10,7 @@
 #ifndef BMS_BMS_EPWM_H_
 #define BMS_BMS_EPWM_H_
 
+
 void PWM_Init(void);
 void EPWM1_Init(void);
 void EPWM2_Init(void);
@@ -24,6 +25,5 @@ void EPWM10_Init(void);
 void EPWM11_Init(void);
 void EPWM12_Init(void);
 
-int tbprd   =   5000;            // ePWM period length 200e6Hz/1e5Hz
 
 #endif /* BMS_BMS_EPWM_H_ */
