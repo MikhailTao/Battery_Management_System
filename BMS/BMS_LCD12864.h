@@ -1,8 +1,10 @@
 /*
  * BMS_LCD12864.h
  *
- *  Created on: 2024Äê1ÔÂ19ÈÕ
+ *  Created on: 2024-01-19
  *      Author: Tao Ran
+ *              UBC Okanagan School of Engineering
+ * Description: LCD header file
  */
 
 #ifndef BMS_BMS_LCD12864_H_
