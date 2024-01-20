@@ -1,8 +1,10 @@
 /*
  * BMS_LCD12864.c
  *
- *  Created on: 2024Äê1ÔÂ19ÈÕ
+ *  Created on: 2024-01-19
  *      Author: Tao Ran
+ *              UBC Okanagan School of Engineering
+ * Description: LCD source file
  */
 
 #include "F28x_Project.h"     // Device Headerfile and Examples Include File

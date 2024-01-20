@@ -9,8 +9,8 @@
 
 
 
-#include "F2837xD_device.h"                         // F2837xD Header file Include File
-#include "F2837xD_Examples.h"                       // F2837xD Examples Include File
+#include "F2837xD_device.h"                                     // F2837xD Header file Include File
+#include "F2837xD_Examples.h"                                   // F2837xD Examples Include File
 #include "F2837xD_Ipc_drivers.h"
 #include "BMS_main.h"
 
@@ -43,11 +43,12 @@ void main(void)
     // illustrates how to set the GPIO to it's default state.
     InitGpio();
 
-    Init_ADC();                                     // Initialize ADC
-    Init_PWM();                                     // Initialize EPWM
-    Init_Exint();                                   // Initialize Button
-    Init_COMM();                                    // Initialize SCIA-RS232 communication
-    Init_LCD();                                     // Initialize LCD 12864
+    Init_ADC();                                                 // Initialize ADC
+    Init_PWM();                                                 // Initialize EPWM
+    Init_Exint();                                               // Initialize Button
+    Init_COMM();                                                // Initialize SCIA-RS232 communication
+    Init_LCD();                                                 // Initialize LCD 12864
+    Init_LED();                                                 // Initialize LED
 
     // Step 3. Clear all interrupts and initialize PIE vector table:
     // Disable CPU interrupts
@@ -71,32 +72,32 @@ void main(void)
     // This function is found in F2837xD_PieVect.c.
     InitPieVectTable();
 
-    EINT;                                           // Enable Global interrupt INTM
-    ERTM;                                           // Enable Global real-time interrupt DBGM
+    EINT;                                                       // Enable Global interrupt INTM
+    ERTM;                                                       // Enable Global real-time interrupt DBGM
 
-    EPwm1Regs.ETSEL.bit.INTSEL = 1;                 // when TBCTR = 0£¬trigger EPWM1_INI
-    EPwm1Regs.ETPS.bit.INTPRD = 1;                  // Generate INT on 1st event
-    EPwm1Regs.ETCLR.bit.INT = 1;                    // Clear Interrupt Flag ETFLG.INT = 0
-    EPwm1Regs.ETSEL.bit.INTEN = 1;                  // Enable INT
+    EPwm1Regs.ETSEL.bit.INTSEL = 1;                             // when TBCTR = 0£¬trigger EPWM1_INI
+    EPwm1Regs.ETPS.bit.INTPRD = 1;                              // Generate INT on 1st event
+    EPwm1Regs.ETCLR.bit.INT = 1;                                // Clear Interrupt Flag ETFLG.INT = 0
+    EPwm1Regs.ETSEL.bit.INTEN = 1;                              // Enable INT
 
-    IER |= M_INT3;                                  // PWM1
-    IER |= M_INT1;                                  // Button 1, Button 2
-    //    IER |= M_INT12;                                 // Button 3, Button 4
+    IER |= M_INT3;                                              // PWM1
+    IER |= M_INT1;                                              // Button 1, Button 2
+//    IER |= M_INT12;                                             // Button 3, Button 4
 
     EALLOW;
-    PieVectTable.EPWM1_INT = &ISR;                  // ISR function for EPWM1 interrupt
-    PieVectTable.XINT1_INT = &xint1_isr;            // Button 1 External Interrupt
-    PieVectTable.XINT2_INT = &xint2_isr;            // Button 2 External Interrupt
-    //    PieVectTable.XINT3_INT = &xint3_isr;            // Button 3 External Interrupt
-    //    PieVectTable.XINT4_INT = &xint4_isr;            // Button 4 External Interrupt
+    PieVectTable.EPWM1_INT = &ISR;                              // ISR function for EPWM1 interrupt
+    PieVectTable.XINT1_INT = &xint1_isr;                        // Button 1 External Interrupt
+    PieVectTable.XINT2_INT = &xint2_isr;                        // Button 2 External Interrupt
+//    PieVectTable.XINT3_INT = &xint3_isr;                        // Button 3 External Interrupt
+//    PieVectTable.XINT4_INT = &xint4_isr;                        // Button 4 External Interrupt
     EDIS;
 
-    PieCtrlRegs.PIECTRL.bit.ENPIE = 1;              // Enable the PIE block
-    PieCtrlRegs.PIEIER3.bit.INTx1 = 1;              // Enable PIE Group 3 INT1      PWM1
-    PieCtrlRegs.PIEIER1.bit.INTx4 = 1;              // Enable PIE Group 1 INT4      Button XINT1
-    PieCtrlRegs.PIEIER1.bit.INTx5 = 1;              // Enable PIE Group 1 INT5      Button XINT2
-    //    PieCtrlRegs.PIEIER12.bit.INTx1 = 1;             // Enable PIE Group 12 INT1     Button XINT3
-    //    PieCtrlRegs.PIEIER12.bit.INTx2 = 1;             // Enable PIE Group 12 INT2     Button XINT4
+    PieCtrlRegs.PIECTRL.bit.ENPIE = 1;                          // Enable the PIE block
+    PieCtrlRegs.PIEIER3.bit.INTx1 = 1;                          // Enable PIE Group 3 INT1      PWM1
+    PieCtrlRegs.PIEIER1.bit.INTx4 = 1;                          // Enable PIE Group 1 INT4      Button XINT1
+    PieCtrlRegs.PIEIER1.bit.INTx5 = 1;                          // Enable PIE Group 1 INT5      Button XINT2
+//    PieCtrlRegs.PIEIER12.bit.INTx1 = 1;                         // Enable PIE Group 12 INT1     Button XINT3
+//    PieCtrlRegs.PIEIER12.bit.INTx2 = 1;                         // Enable PIE Group 12 INT2     Button XINT4
 
     Init_Slot();
     Init_BMS ();

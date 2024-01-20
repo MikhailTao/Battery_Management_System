@@ -88,4 +88,7 @@ extern  void            xint2_isr(void);
 extern  void            Init_LCD(void);
 extern  void            display_state (void);
 
+// LED
+void Init_LED (void);
+
 #endif
